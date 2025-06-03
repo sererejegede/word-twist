@@ -16,7 +16,6 @@ interface GamePlayProps {
   onSubmit: () => void;
   onSkip: () => void;
   onShuffleWord: () => void;
-  feedbackMessage: string | null;
   isSubmitting: boolean;
   animatedScore: number | null;
 }
@@ -31,7 +30,6 @@ export function GamePlay({
   onSubmit,
   onSkip,
   onShuffleWord,
-  feedbackMessage,
   isSubmitting,
   animatedScore,
 }: GamePlayProps) {
@@ -65,7 +63,7 @@ export function GamePlay({
             <span className="flex items-center"><TrendingUp className="mr-1 h-4 w-4" /> Score: {score}</span>
             {animatedScore !== null && (
               <div
-                key={Date.now()} // Re-trigger animation if score changes rapidly (though unlikely here)
+                key={Date.now()} // Re-trigger animation if score changes rapidly
                 className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-md shadow-lg animate-score-popup whitespace-nowrap"
               >
                 +{animatedScore}
@@ -105,11 +103,6 @@ export function GamePlay({
             {isSubmitting ? 'Checking...' : 'Submit'}
           </Button>
         </form>
-        {feedbackMessage && (
-          <p className={`text-center text-sm ${feedbackMessage.startsWith("Skipped") ? 'text-yellow-400' : 'text-red-400'}`}>
-            {feedbackMessage}
-          </p>
-        )}
       </CardContent>
       <CardFooter className="flex flex-col items-center space-y-4">
         <Button variant="outline" onClick={onSkip} className="w-full border-accent text-accent hover:bg-accent/10 hover:text-accent" disabled={isSubmitting}>
