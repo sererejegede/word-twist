@@ -200,6 +200,7 @@ export const anagrams = [
   { word: "marine", anagrams: ["remain"] },
   { word: "moon", anagrams: ["mono"] },
   { word: "name", anagrams: ["mane", "mean"] },
+  { word: "never", anagrams: ["nerve"] },
   { word: "night", anagrams: ["thing"] },
   { word: "north", anagrams: ["thorn"] },
   { word: "nose", anagrams: ["ones", "eons"] },
