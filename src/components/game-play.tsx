@@ -75,7 +75,7 @@ export function GamePlay({
         <Button variant="outline" onClick={onSkip} className="w-full border-accent text-accent hover:bg-accent/10 hover:text-accent" disabled={isSubmitting}>
           <SkipForward className="mr-2 h-4 w-4" /> Skip Word
         </Button>
-        <div className="text-sm text-muted-foreground flex items-center">
+        <div className="text-sm text-muted-foreground flex items-center font-code">
           <Clock className="mr-1 h-4 w-4" /> Time for this word: {currentWordTime}s
         </div>
       </CardFooter>
