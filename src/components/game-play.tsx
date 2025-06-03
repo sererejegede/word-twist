@@ -16,8 +16,8 @@ interface GamePlayProps {
   onSubmit: () => void;
   onSkip: () => void;
   onShuffleWord: () => void;
-  feedbackMessage: string | null;
   isSubmitting: boolean;
+  animatedScore: number | null;
 }
 
 export function GamePlay({
@@ -30,8 +30,8 @@ export function GamePlay({
   onSubmit,
   onSkip,
   onShuffleWord,
-  feedbackMessage,
   isSubmitting,
+  animatedScore,
 }: GamePlayProps) {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export function GamePlay({
       onShuffleWord();
     }
   };
-  
+
   const handleScrambledWordKeyDown = (e: React.KeyboardEvent) => {
     if (!isSubmitting && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
@@ -59,14 +59,21 @@ export function GamePlay({
         <CardTitle className="text-center text-3xl font-headline text-primary">WordTwist</CardTitle>
         <div className="flex justify-between text-sm text-muted-foreground mt-2">
           <span className="flex items-center"><BarChart2 className="mr-1 h-4 w-4" /> {progressText}</span>
-          <span className="flex items-center"><TrendingUp className="mr-1 h-4 w-4" /> Score: {score}</span>
+          <div className="relative"> {/* Wrapper for score and animated feedback */}
+            <span className="flex items-center"><TrendingUp className="mr-1 h-4 w-4" /> Score: {score}</span>
+            {animatedScore !== null && (
+              <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-md shadow-lg animate-score-popup whitespace-nowrap">
+                +{animatedScore}
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-2">Unscramble this word (click to reshuffle):</p>
           <div
-            key={`${currentWord.id}-${currentWord.scrambled}`} 
+            key={`${currentWord.id}-${currentWord.scrambled}`}
             className={`text-5xl font-bold tracking-widest text-accent animate-fadeIn font-code select-none ${
               !isSubmitting ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'cursor-not-allowed opacity-50'
             }`}
@@ -93,11 +100,6 @@ export function GamePlay({
             {isSubmitting ? 'Checking...' : 'Submit'}
           </Button>
         </form>
-        {feedbackMessage && (
-          <p className={`text-center text-sm ${feedbackMessage.startsWith("Correct") ? 'text-green-400' : feedbackMessage.startsWith("Skipped") ? 'text-yellow-400' : 'text-red-400'}`}>
-            {feedbackMessage}
-          </p>
-        )}
       </CardContent>
       <CardFooter className="flex flex-col items-center space-y-4">
         <Button variant="outline" onClick={onSkip} className="w-full border-accent text-accent hover:bg-accent/10 hover:text-accent" disabled={isSubmitting}>

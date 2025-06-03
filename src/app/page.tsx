@@ -20,9 +20,9 @@ export default function WordTwistPage() {
   const [wordStartTime, setWordStartTime] = useState<number | null>(null);
   const [totalTimeTaken, setTotalTimeTaken] = useState(0);
   const [gameState, setGameState] = useState<'loading' | 'playing' | 'results'>('loading');
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [displayedWordTime, setDisplayedWordTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [animatedScore, setAnimatedScore] = useState<number | null>(null);
   const { toast } = useToast();
 
   const initializeGame = useCallback(() => {
@@ -33,12 +33,12 @@ export default function WordTwistPage() {
     setScore(0);
     setTotalTimeTaken(0);
     setInputValue('');
-    setFeedbackMessage(null);
+    setAnimatedScore(null);
     if (newGameWords.length > 0) {
       setWordStartTime(Date.now());
       setGameState('playing');
     } else {
-      setGameState('results'); 
+      setGameState('results');
     }
   }, []);
 
@@ -49,27 +49,20 @@ export default function WordTwistPage() {
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (gameState === 'playing' && wordStartTime) {
-      setDisplayedWordTime(0); 
+      setDisplayedWordTime(0);
       intervalId = setInterval(() => {
         setDisplayedWordTime(Math.floor((Date.now() - wordStartTime) / 1000));
       }, 1000);
     }
     return () => clearInterval(intervalId);
-  }, [gameState, wordStartTime, currentWordIndex]); // Added currentWordIndex to reset timer correctly for new word
-
-  useEffect(() => {
-    if (feedbackMessage) {
-      const timer = setTimeout(() => setFeedbackMessage(null), 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [feedbackMessage]);
+  }, [gameState, wordStartTime, currentWordIndex]);
 
   const proceedToNextWord = useCallback(() => {
+    setAnimatedScore(null); // Clear animation before next word
     if (currentWordIndex + 1 < gameWords.length) {
       setCurrentWordIndex(prevIndex => prevIndex + 1);
       setInputValue('');
       setWordStartTime(Date.now());
-      setFeedbackMessage(null);
     } else {
       setGameState('results');
     }
@@ -87,11 +80,11 @@ export default function WordTwistPage() {
     if (inputValue.trim().toLowerCase() === currentWord.original.toLowerCase()) {
       const wordScore = Math.max(10, 100 - Math.floor(timeTakenForWord));
       setScore(prevScore => prevScore + wordScore);
-      setFeedbackMessage(`Correct! +${wordScore} points`);
+      setAnimatedScore(wordScore);
+      setTimeout(() => setAnimatedScore(null), 1500); // Animation lasts 1.5s
       toast({ title: "Correct!", description: `You earned ${wordScore} points.`, duration: 2000 });
       setTimeout(proceedToNextWord, 1500);
     } else {
-      setFeedbackMessage("Incorrect. Try again or skip.");
       toast({ title: "Incorrect", description: "That's not the word. Keep trying or skip!", variant: "destructive", duration: 2000 });
       setIsSubmitting(false);
     }
@@ -100,10 +93,10 @@ export default function WordTwistPage() {
   const handleSkip = useCallback(() => {
     if (!wordStartTime || isSubmitting) return;
     setIsSubmitting(true);
+    setAnimatedScore(null); // Clear any existing score animation
 
     const timeTakenForWord = (Date.now() - wordStartTime) / 1000;
     setTotalTimeTaken(prevTotal => prevTotal + timeTakenForWord);
-    setFeedbackMessage(`Skipped! The word was: ${gameWords[currentWordIndex].original}`);
     toast({ title: "Word Skipped", description: `The word was "${gameWords[currentWordIndex].original}".`, duration: 2000 });
     setTimeout(proceedToNextWord, 1500);
   }, [wordStartTime, gameWords, currentWordIndex, proceedToNextWord, toast, isSubmitting]);
@@ -121,7 +114,7 @@ export default function WordTwistPage() {
 
     let newScrambledCandidate = currentScrambled;
     let attempts = 0;
-    const maxAttempts = 30; 
+    const maxAttempts = 30;
     const uniqueCharsInOriginal = new Set(original.split('')).size;
 
     do {
@@ -129,15 +122,10 @@ export default function WordTwistPage() {
       attempts++;
     } while (
       attempts < maxAttempts &&
-      // Keep shuffling if:
-      // 1. The new candidate IS the original word (unless all shuffles result in the original, e.g., "AA")
       (newScrambledCandidate === original && uniqueCharsInOriginal > 1) ||
-      // 2. The new candidate is the same as the current one (and it's not a word like "AA" or a 2-letter word where options are limited)
       (newScrambledCandidate === currentScrambled && uniqueCharsInOriginal > 1 && original.length > 2)
     );
-    
-    // If, after attempts, it's still the original word (and it's not a single unique char word like "AAA"),
-    // try one last time to ensure it's different from original, even if it matches currentScrambled.
+
     if (newScrambledCandidate === original && uniqueCharsInOriginal > 1 && attempts >= maxAttempts) {
         let finalShuffleAttempt = 0;
         let tempScramble = newScrambledCandidate;
@@ -147,7 +135,6 @@ export default function WordTwistPage() {
         } while (tempScramble === original && finalShuffleAttempt < 5);
         newScrambledCandidate = tempScramble;
     }
-
 
     const updatedGameWords = [...gameWords];
     updatedGameWords[currentWordIndex] = {
@@ -207,8 +194,8 @@ export default function WordTwistPage() {
         onSubmit={handleSubmit}
         onSkip={handleSkip}
         onShuffleWord={handleShuffleWord}
-        feedbackMessage={feedbackMessage}
         isSubmitting={isSubmitting}
+        animatedScore={animatedScore}
       />
     </main>
   );

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -52,4 +53,15 @@ body {
 
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes scorePopup {
+  0% { opacity: 0; transform: translateY(5px) scale(0.8); }
+  20% { opacity: 1; transform: translateY(-8px) scale(1.1); }
+  80% { opacity: 1; transform: translateY(-8px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-15px) scale(0.8); }
+}
+
+.animate-score-popup {
+  animation: scorePopup 1.5s ease-out forwards;
 }
