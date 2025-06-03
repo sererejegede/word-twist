@@ -47,7 +47,7 @@ export function GamePlay({
       <CardContent className="space-y-6">
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-2">Unscramble this word:</p>
-          <h2 key={currentWord.id} className="text-5xl font-bold tracking-widest text-accent animate-fadeIn">
+          <h2 key={currentWord.id} className="text-5xl font-bold tracking-widest text-accent animate-fadeIn font-code">
             {currentWord.scrambled.toUpperCase()}
           </h2>
         </div>

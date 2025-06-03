@@ -10,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        body: ['Raleway', 'sans-serif'],
+        headline: ['Raleway', 'sans-serif'],
         code: ['monospace', 'monospace'],
       },
       colors: {
@@ -78,7 +78,6 @@ export default {
             height: '0',
           },
         },
-        // Added fadeIn for WordTwist
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0px)' },
@@ -87,7 +86,6 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        // Added fadeIn for WordTwist
         'fadeIn': 'fadeIn 0.5s ease-out forwards',
       },
     },
