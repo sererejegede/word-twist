@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SkipForward, Clock, BarChart2, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ interface GamePlayProps {
   onInputChange: (value: string) => void;
   onSubmit: () => void;
   onSkip: () => void;
+  onShuffleWord: () => void;
   feedbackMessage: string | null;
   isSubmitting: boolean;
 }
@@ -27,12 +29,28 @@ export function GamePlay({
   onInputChange,
   onSubmit,
   onSkip,
+  onShuffleWord,
   feedbackMessage,
   isSubmitting,
 }: GamePlayProps) {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit();
+    if (!isSubmitting) {
+      onSubmit();
+    }
+  };
+
+  const handleScrambledWordClick = () => {
+    if (!isSubmitting) {
+      onShuffleWord();
+    }
+  };
+  
+  const handleScrambledWordKeyDown = (e: React.KeyboardEvent) => {
+    if (!isSubmitting && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onShuffleWord();
+    }
   };
 
   return (
@@ -46,10 +64,20 @@ export function GamePlay({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Unscramble this word:</p>
-          <h2 key={currentWord.id} className="text-5xl font-bold tracking-widest text-accent animate-fadeIn font-code">
+          <p className="text-sm text-muted-foreground mb-2">Unscramble this word (click to reshuffle):</p>
+          <div
+            key={`${currentWord.id}-${currentWord.scrambled}`} 
+            className={`text-5xl font-bold tracking-widest text-accent animate-fadeIn font-code select-none ${
+              !isSubmitting ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'cursor-not-allowed opacity-50'
+            }`}
+            onClick={handleScrambledWordClick}
+            onKeyDown={handleScrambledWordKeyDown}
+            role="button"
+            tabIndex={!isSubmitting ? 0 : -1}
+            aria-label="Scrambled word, click or press Enter to reshuffle"
+          >
             {currentWord.scrambled.toUpperCase()}
-          </h2>
+          </div>
         </div>
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <Input

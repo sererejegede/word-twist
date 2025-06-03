@@ -1,10 +1,12 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getShuffledWordBank, type WordPair } from '@/lib/words';
+import { getShuffledWordBank, shuffleString, type WordPair } from '@/lib/words';
 import { GamePlay } from '@/components/game-play';
 import { ResultsDisplay } from '@/components/results-display';
 import { Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -36,8 +38,7 @@ export default function WordTwistPage() {
       setWordStartTime(Date.now());
       setGameState('playing');
     } else {
-      // Handle case where no words are loaded, though unlikely with local bank
-      setGameState('results'); // Or an error state
+      setGameState('results'); 
     }
   }, []);
 
@@ -48,13 +49,13 @@ export default function WordTwistPage() {
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (gameState === 'playing' && wordStartTime) {
-      setDisplayedWordTime(0); // Reset for new word
+      setDisplayedWordTime(0); 
       intervalId = setInterval(() => {
         setDisplayedWordTime(Math.floor((Date.now() - wordStartTime) / 1000));
       }, 1000);
     }
     return () => clearInterval(intervalId);
-  }, [gameState, wordStartTime]);
+  }, [gameState, wordStartTime, currentWordIndex]); // Added currentWordIndex to reset timer correctly for new word
 
   useEffect(() => {
     if (feedbackMessage) {
@@ -107,6 +108,58 @@ export default function WordTwistPage() {
     setTimeout(proceedToNextWord, 1500);
   }, [wordStartTime, gameWords, currentWordIndex, proceedToNextWord, toast, isSubmitting]);
 
+  const handleShuffleWord = useCallback(() => {
+    if (gameState !== 'playing' || !gameWords[currentWordIndex] || isSubmitting) return;
+
+    const currentWordPair = gameWords[currentWordIndex];
+    const { original, scrambled: currentScrambled } = currentWordPair;
+
+    if (original.length <= 1) {
+      toast({ title: "Too short to reshuffle.", duration: 1500 });
+      return;
+    }
+
+    let newScrambledCandidate = currentScrambled;
+    let attempts = 0;
+    const maxAttempts = 30; 
+    const uniqueCharsInOriginal = new Set(original.split('')).size;
+
+    do {
+      newScrambledCandidate = shuffleString(original);
+      attempts++;
+    } while (
+      attempts < maxAttempts &&
+      // Keep shuffling if:
+      // 1. The new candidate IS the original word (unless all shuffles result in the original, e.g., "AA")
+      (newScrambledCandidate === original && uniqueCharsInOriginal > 1) ||
+      // 2. The new candidate is the same as the current one (and it's not a word like "AA" or a 2-letter word where options are limited)
+      (newScrambledCandidate === currentScrambled && uniqueCharsInOriginal > 1 && original.length > 2)
+    );
+    
+    // If, after attempts, it's still the original word (and it's not a single unique char word like "AAA"),
+    // try one last time to ensure it's different from original, even if it matches currentScrambled.
+    if (newScrambledCandidate === original && uniqueCharsInOriginal > 1 && attempts >= maxAttempts) {
+        let finalShuffleAttempt = 0;
+        let tempScramble = newScrambledCandidate;
+        do {
+            tempScramble = shuffleString(original);
+            finalShuffleAttempt++;
+        } while (tempScramble === original && finalShuffleAttempt < 5);
+        newScrambledCandidate = tempScramble;
+    }
+
+
+    const updatedGameWords = [...gameWords];
+    updatedGameWords[currentWordIndex] = {
+      ...currentWordPair,
+      scrambled: newScrambledCandidate,
+    };
+    setGameWords(updatedGameWords);
+    toast({ title: "Word Reshuffled!", duration: 1500 });
+
+  }, [gameWords, currentWordIndex, gameState, toast, isSubmitting]);
+
+
   const handlePlayAgain = () => {
     initializeGame();
   };
@@ -134,7 +187,6 @@ export default function WordTwistPage() {
 
   const currentWord = gameWords[currentWordIndex];
   if (!currentWord) {
-     // This case should ideally not be reached if gameWords is populated
      return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <p className="text-lg text-destructive">Error: Could not load word.</p>
@@ -154,6 +206,7 @@ export default function WordTwistPage() {
         onInputChange={setInputValue}
         onSubmit={handleSubmit}
         onSkip={handleSkip}
+        onShuffleWord={handleShuffleWord}
         feedbackMessage={feedbackMessage}
         isSubmitting={isSubmitting}
       />

@@ -1,3 +1,4 @@
+
 export interface WordPair {
   id: number;
   original: string;
@@ -34,3 +35,13 @@ function shuffleArray<T>(array: T[]): T[] {
 export const getShuffledWordBank = (count: number = 5): WordPair[] => {
   return shuffleArray(wordBank).slice(0, count);
 };
+
+export function shuffleString(str: string): string {
+  if (!str) return "";
+  const arr = str.split('');
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.join('');
+}
