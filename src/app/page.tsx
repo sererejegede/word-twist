@@ -43,7 +43,14 @@ export default function WordTwistPage() {
     if (gameState === 'playing' && wordStartTime) {
       setDisplayedWordTime(0);
       intervalId = setInterval(() => {
-        setDisplayedWordTime(Math.floor((Date.now() - wordStartTime) / 1000));
+        setDisplayedWordTime(_prevTime => {
+          const newTime = Math.floor((Date.now() - wordStartTime) / 1000);
+          if (newTime >= 5) {
+            clearInterval(intervalId);
+            return 5;
+          }
+          return newTime;
+        });
       }, 1000);
     }
     return () => clearInterval(intervalId);
