@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useWords } from '@/hooks/use-words';
 
+const MAX_TIME = 2.5 * 60;
 
 export default function WordTwistPage() {
   const [inputValue, setInputValue] = useState('');
@@ -45,9 +46,9 @@ export default function WordTwistPage() {
       intervalId = setInterval(() => {
         setDisplayedWordTime(_prevTime => {
           const newTime = Math.floor((Date.now() - wordStartTime) / 1000);
-          if (newTime >= 5) {
+          if (newTime >= MAX_TIME) {
             clearInterval(intervalId);
-            return 5;
+            return MAX_TIME;
           }
           return newTime;
         });
