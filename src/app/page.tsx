@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { GamePlay } from '@/components/game-play';
-import { ResultsDisplay } from '@/components/results-display';
+import { GameStatusCard } from '@/components/game-status-card';
 import { Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +16,7 @@ export default function WordTwistPage() {
   const [score, setScore] = useState(0);
   const [wordStartTime, setWordStartTime] = useState<number | null>(null);
   const [totalTimeTaken, setTotalTimeTaken] = useState(0);
-  const [gameState, setGameState] = useState<'loading' | 'playing' | 'results' | 'error'>('loading');
+  const [gameState, setGameState] = useState<'start' | 'loading' | 'playing' | 'results' | 'error'>('start');
   const [displayedWordTime, setDisplayedWordTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [animatedScore, setAnimatedScore] = useState<number | null>(null);
@@ -34,10 +34,6 @@ export default function WordTwistPage() {
     setGameState('playing');
     setUsedWords([]);
   }, []);
-
-  useEffect(() => {
-    initializeGame();
-  }, [initializeGame]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -87,11 +83,11 @@ export default function WordTwistPage() {
       setScore(prevScore => prevScore + wordScore);
       setAnimatedScore(wordScore);
       setTimeout(() => setAnimatedScore(null), 1500); // Animation lasts 1.5s
-      toast({ title: "Correct!", description: `You earned ${wordScore} points.`, duration: 2000 });
+      // toast({ title: "Correct!", description: `You earned ${wordScore} points.`, duration: 2000 });
       proceedToNextWord()
     } else {
       setGameState('error');
-      toast({ title: "Incorrect", description: "That's not the word. Keep trying or skip!", variant: "destructive", duration: 2000 });
+      // toast({ title: "Incorrect", description: "That's not the word. Keep trying or skip!", variant: "destructive", duration: 2000 });
       setIsSubmitting(false);
     }
   }, [wordStartTime, inputValue, proceedToNextWord, toast, isSubmitting]);
@@ -118,6 +114,18 @@ export default function WordTwistPage() {
     initializeGame();
   };
 
+  if (gameState === 'start') {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <GameStatusCard
+          variant="start"
+          totalWords={TOTAL_WORDS}
+          onAction={initializeGame}
+        />
+      </div>
+    );
+  }
+
   if (gameState === 'loading' || word == null) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -130,10 +138,11 @@ export default function WordTwistPage() {
   if (gameState === 'results') {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        <ResultsDisplay
+        <GameStatusCard
+          variant="results"
           finalScore={score}
           totalGameTime={Math.floor(totalTimeTaken)}
-          onPlayAgain={handlePlayAgain}
+          onAction={handlePlayAgain}
         />
       </div>
     );
